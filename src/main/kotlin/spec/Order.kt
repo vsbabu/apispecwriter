@@ -1,13 +1,13 @@
 package spec
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.parameters.RequestBody
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.sql.Timestamp
 import java.time.LocalDateTime
 import javax.persistence.Entity
@@ -25,20 +25,45 @@ import javax.validation.constraints.Size
 """
 )
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/order/")
 class OrderApis {
 
     @Operation(
-        summary = "Create an order for an email"
+        summary = "Create an order for an email",
+        description = """
+            Create an order for a particular *email*.
+            Order data must be passed in the child.          
+          """
     )
-    @PostMapping("/order/email/{id}")
+    @ApiResponses(value = [
+        ApiResponse(responseCode = "200", description = "Created order",
+            content = [Content(mediaType = "application/json", schema = Schema(implementation = OrderData::class))]
+        )]
+    )
+    @PostMapping("email/{emailid}")
     fun createNewOrderByMail(
-        @PathVariable(value = "id") email: String,
+        @PathVariable(value = "emailid") email: String,
         @RequestBody order: OrderData
     ): OrderData? {
         return null
     }
 
+    @Operation (
+        summary = "Get an order by id"
+    )
+    @ApiResponses(value = [
+        ApiResponse(responseCode = "200", description = "Order retrieved",
+            content = [Content(mediaType = "application/json", schema = Schema(implementation = OrderData::class))]
+        ),
+        ApiResponse(responseCode = "404", description = "Order not found", content = [Content()])
+    ]
+    )
+    @GetMapping("/{id}")
+    fun getOrderById(
+        @PathVariable(value = "id") id: Long
+    ): OrderData? {
+        return null
+    }
 
 }
 
@@ -48,17 +73,17 @@ data class OrderData(
     @Id
     val id: Long = 0,
 
-    @get: NotEmpty
+    @NotEmpty
     var customerId: Long = 0,
 
     @Size(min = 10, max = 15)
-    @get: NotBlank
+    @NotBlank
     val product: String = "",
 
-    @get: NotEmpty
+    @NotEmpty
     var orderDate: Timestamp = Timestamp.valueOf(LocalDateTime.now()),
 
-    @get: NotEmpty
+    @NotEmpty
     var confirmed: Int = 0,
 
     )
